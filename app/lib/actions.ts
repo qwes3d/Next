@@ -1,3 +1,4 @@
+//actions.ts
 'use server';
  
  
@@ -100,21 +101,30 @@ export async function updateInvoice(
 }
 
 
-export async function authenticate(
-  prevState: string | undefined,
-  formData: FormData,
-) {
+export async function authenticate(prevState: undefined, formData: FormData) {
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
   try {
-    await signIn('credentials', formData);
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    })
+
+    if (result?.error) {
+      return result.error
+    }
+
+    return undefined // no error
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return 'Invalid credentials.';
+          return 'Invalid email or password.'
         default:
-          return 'Something went wrong.';
+          return 'Something went wrong.'
       }
     }
-    throw error;
+    throw error
   }
 }
